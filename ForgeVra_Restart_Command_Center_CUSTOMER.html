@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ForgeVra — 30-Day Restart Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --forge:#15191d; --forge2:#1e252b; --forge3:#242c33;
+  --paper:#ede4d3; --paper2:#f6f1e6; --ink:#211a12; --muted:#7c7362;
+  --line:#dccfaf; --line-dark:#31393f;
+  --ember:#e85c24; --ember-dim:#b23a12; --brass:#c9a227;
+  --success:#2f8f63; --danger:#b23a3a;
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--forge);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+.app{max-width:1100px;margin:auto;padding:18px 16px 60px}
+
+/* ---- Header / nav ---- */
+.top{background:linear-gradient(160deg,var(--forge2),var(--forge));color:#fff;border-radius:22px;padding:24px 24px 20px;position:sticky;top:8px;z-index:5;box-shadow:0 14px 40px #0005;border:1px solid #ffffff12}
+.topline{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.brand{font-family:var(--font-mono);font-size:10.5px;letter-spacing:4px;color:var(--brass);font-weight:600}
+.title{font-family:var(--font-display);font-size:29px;font-weight:700;margin:6px 0 4px;letter-spacing:-.5px;color:#f5f5f5}
+.tag{font-size:12.5px;color:#c7ccd0;line-height:1.55;max-width:640px}
+.barwrap{margin-top:16px;background:#ffffff1a;height:8px;border-radius:20px;overflow:hidden}
+.bar{height:100%;background:linear-gradient(90deg,var(--ember-dim),var(--ember));width:0;transition:.3s}
+.bartext{font-family:var(--font-mono);font-size:10.5px;color:#c7ccd0;margin-top:7px;letter-spacing:.3px}
+
+.nav{display:flex;gap:7px;overflow:auto;margin:14px 0}
+.nav button{white-space:nowrap;border:1px solid var(--line-dark);background:var(--forge2);color:#c7ccd0;border-radius:999px;padding:9px 14px;font-weight:600;font-size:11px;cursor:pointer;font-family:var(--font-mono);letter-spacing:.3px}
+.nav button.active{background:var(--ember);color:#fff;border-color:var(--ember)}
+
+/* ---- Panels / cards ---- */
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--paper2);border:1px solid var(--line);border-radius:17px;padding:20px;margin-bottom:14px;box-shadow:0 3px 18px #0000000a}
+.hero{background:linear-gradient(160deg,#fff5e6,var(--paper));border-color:#eccd97}
+.eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:2px;font-weight:600;color:var(--ember-dim);text-transform:uppercase}
+h2{font-family:var(--font-display);margin:5px 0 5px;font-size:19px;letter-spacing:-.2px}
+h3{font-size:13.5px;margin:16px 0 8px;font-weight:700}
+.hint{font-size:12px;color:var(--muted);line-height:1.55;margin:0 0 13px}
+.mini{font-size:11px;color:var(--muted);margin:4px 0 0;line-height:1.4}
+
+input,textarea,select{width:100%;border:1px solid #cbbfa2;background:#fff;border-radius:10px;padding:10px;font:inherit;color:var(--ink);outline:none}
+textarea{min-height:75px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--ember);box-shadow:0 0 0 3px #e85c2420}
+label{display:block;font-size:11px;font-weight:700;margin:10px 0 5px;color:#4a4335}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0;align-items:center}
+.btn{border:0;border-radius:999px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:13px;font-family:var(--font-body)}
+.primary{background:var(--ember);color:#fff}
+.primary:hover{background:var(--ember-dim)}
+.dark{background:var(--forge);color:#fff}
+.ghost{background:#fff;border:1px solid var(--line)}
+
+.daygrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.daybtn{border:1px solid var(--line);background:#fff;border-radius:11px;padding:12px 5px;text-align:center;cursor:pointer;font-weight:700;font-size:11px;font-family:var(--font-mono)}
+.daybtn.active{background:var(--forge);color:#fff;border-color:var(--forge)}
+.daybtn.draft{border-color:var(--brass);color:#8a6d10}
+.daybtn small{display:block;font-weight:500;opacity:.7;margin-top:3px;font-family:var(--font-body)}
+
+.metric{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.metric .m{background:#faf5e9;border:1px solid var(--line);border-radius:12px;padding:12px}
+.num{font-family:var(--font-mono);font-size:22px;font-weight:600}
+.mlabel{font-size:10px;color:var(--muted)}
+
+.status{padding:9px 11px;border-radius:10px;background:#eaf6ef;color:var(--success);font-size:11px;font-weight:700;display:inline-block;font-family:var(--font-mono)}
+
+.report{background:var(--forge);color:#fff}
+.report .hint{color:#c7ccd0}
+.report .m{background:#ffffff0f;border-color:#ffffff18}
+.report .mlabel{color:#c7ccd0}
+
+/* ---- Forge Gauge (signature element) ---- */
+.gaugewrap{display:flex;flex-direction:column;align-items:center;padding:6px 0 2px}
+.gauge{width:260px;max-width:100%}
+.gauge .track{fill:none;stroke:#00000012;stroke-width:14;stroke-linecap:round}
+.report .gauge .track{stroke:#ffffff14}
+.gauge .fill{fill:none;stroke:url(#emberGrad);stroke-width:14;stroke-linecap:round;transition:stroke-dasharray .6s ease}
+.gauge .needle{stroke:var(--forge);stroke-width:3;transform-origin:130px 130px;transition:transform .6s ease}
+.report .gauge .needle{stroke:#fff}
+.gauge .hub{fill:var(--forge)}
+.report .gauge .hub{fill:#fff}
+.gaugeread{font-family:var(--font-mono);font-size:26px;font-weight:600;margin-top:-30px}
+.gaugesub{font-family:var(--font-mono);font-size:10.5px;color:var(--muted);letter-spacing:.5px;margin-top:2px}
+.report .gaugesub{color:#c7ccd0}
+
+footer{text-align:center;color:#8a8f94;font-size:10px;margin-top:22px;font-family:var(--font-mono);letter-spacing:.5px}
+
+@media(max-width:700px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .daygrid{grid-template-columns:repeat(4,1fr)}
+  .metric{grid-template-columns:1fr 1fr}
+  .top{position:relative}
+  .title{font-size:25px}
+  .whoami{text-align:left}
+}
+@media print{
+  .top,.nav,.btns{position:static;box-shadow:none}
+  .panel{display:none!important}
+  #report.panel{display:block!important}
+  .report{color:#fff!important;background:#17252b!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ APP ============ -->
+<div class="app" id="app">
+<div class="app-inner">
+<header class="top">
+  <div class="brand">FORGEVRA</div>
+  <div class="title">30-DAY RESTART COMMAND CENTER</div>
+  <div class="tag">A 30-day daily execution system. Plan the day. Record what happened. Capture mistakes. Re-enter quickly. Finish with your own evidence-based report.</div>
+  <div class="barwrap"><div class="bar" id="topbar"></div></div>
+  <div class="bartext" id="toptext">Cycle not started</div>
+</header>
+
+<nav class="nav">
+<button onclick="show('setup')" id="nsetup">01 Setup</button>
+<button onclick="show('today')" id="ntoday">02 Today</button>
+<button onclick="show('days')" id="ndays">03 Progress</button>
+<button onclick="show('review')" id="nreview">04 Review</button>
+<button onclick="show('report')" id="nreport">05 Final Report</button>
+</nav>
+
+<section class="panel" id="setup">
+<div class="card hero"><div class="eyebrow">Start here</div><h2>Build your 30-day contract</h2><p class="hint">One goal. One cycle. A Floor that survives a difficult week.</p>
+<div class="grid2"><div><label>My goal</label><input data-s="goal"></div><div><label>Start date</label><input type="date" data-s="start"></div></div>
+<div class="grid3"><div><label>Floor</label><textarea data-s="floor" placeholder="Minimum I protect"></textarea></div><div><label>Target</label><textarea data-s="target" placeholder="Normal aim"></textarea></div><div><label>Stretch</label><textarea data-s="stretch" placeholder="Exceptional output"></textarea></div></div>
+<label>Why does this goal matter?</label><textarea data-s="why"></textarea>
+<label>What does success look like after 30 days?</label><textarea data-s="success"></textarea>
+<div class="grid2"><div><label>Calendar / normal time</label><input data-s="calendar"></div><div><label>Accountability mechanism</label><input data-s="accountability"></div></div>
+<label>My 10-minute reentry action</label><textarea data-s="reentry"></textarea>
+<div class="btns"><button class="btn primary" onclick="save()">Save setup</button></div></div>
+
+<div class="card"><div class="eyebrow">Failure Cost Audit</div><h2>Know the pattern before it happens</h2>
+<label>What usually happens after I miss once?</label><textarea data-s="oldpattern"></textarea>
+<label>Practical cost of one miss</label><textarea data-s="practical"></textarea>
+<label>Emotional story I usually attach to it</label><textarea data-s="emotional"></textarea>
+<label>My restart rule</label><textarea data-s="rule" placeholder="If I miss ___, I will re-enter ___ within ___"></textarea></div>
+</section>
+
+<section class="panel" id="today">
+<div class="card hero"><div class="eyebrow" id="todayEyebrow">Today</div><h2 id="todayTitle">Day 1 — Today's Mission</h2><p class="hint">Complete the planned action, then record reality. A mistake is data, not a verdict.</p>
+<label>Today's mission</label><textarea id="mission"></textarea>
+<div class="grid2"><div><label>Planned level</label><select id="level"><option>Floor</option><option selected>Target</option><option>Stretch</option></select></div><div><label>Time / session planned</label><input id="planned"></div></div>
+<label>What did I complete?</label><textarea id="done"></textarea>
+<label>What went well?</label><textarea id="worked"></textarea>
+<label>Mistake / obstacle</label><textarea id="mistake"></textarea>
+<label>Why did it happen?</label><textarea id="cause"></textarea>
+<label>Lesson</label><textarea id="lesson"></textarea>
+<label>Tomorrow's adjustment</label><textarea id="adjust"></textarea>
+<div class="btns"><button class="btn primary" onclick="saveDay()">Save Day</button><button class="btn ghost" onclick="completeDay()">Mark Day Complete</button></div>
+<span class="status" id="saveStatus">Not saved yet</span></div>
+
+<div class="card"><div class="eyebrow">Fast restart</div><h2>If today went badly</h2>
+<p class="hint">Do not redesign the entire goal tonight.</p>
+<div class="grid3"><div class="card" style="margin:0"><b>1. LOG</b><p class="mini">Record what happened.</p></div><div class="card" style="margin:0"><b>2. RE-ENTER</b><p class="mini">Use your smallest useful action.</p></div><div class="card" style="margin:0"><b>3. REVIEW</b><p class="mini">Look for patterns later.</p></div></div>
+</div>
+</section>
+
+<section class="panel" id="days">
+<div class="card">
+<div class="eyebrow">Forge Gauge</div><h2>Your progress at a glance</h2>
+<p class="hint">This dial — and every entry behind it — is what your coach sees on their dashboard too.</p>
+<div class="gaugewrap" id="gaugeMain"></div>
+</div>
+<div class="card"><h2>Cycle metrics</h2><div class="metric"><div class="m"><div class="num" id="mcomplete">0</div><div class="mlabel">Days completed</div></div><div class="m"><div class="num" id="mrate">0%</div><div class="mlabel">Completion rate</div></div><div class="m"><div class="num" id="mmisses">0</div><div class="mlabel">Missed / incomplete</div></div><div class="m"><div class="num" id="mnotes">0</div><div class="mlabel">Days with notes</div></div></div></div>
+<div class="card"><div class="eyebrow">Cycle map</div><h2>Choose a day</h2><p class="hint">Completed days stay stored on this device. Select any day to review or edit its entry.</p><div class="daygrid" id="daygrid"></div></div>
+</section>
+
+<section class="panel" id="review">
+<div class="card"><div class="eyebrow">Weekly review</div><h2>Standup-for-One</h2><p class="hint">One review. One adjustment.</p>
+<div class="grid2"><div><label>What did I complete?</label><textarea data-s="weeklyComplete"></textarea></div><div><label>What blocked me?</label><textarea data-s="weeklyBlocked"></textarea></div></div>
+<div class="grid2"><div><label>What worked?</label><textarea data-s="weeklyWorked"></textarea></div><div><label>ONE adjustment for next week</label><textarea data-s="weeklyAdjust"></textarea></div></div>
+<div class="btns"><button class="btn primary" onclick="save()">Save review</button></div></div>
+<div class="card"><div class="eyebrow">30-day review</div><h2>What did the system teach you?</h2>
+<label>What became easier?</label><textarea data-s="easier"></textarea>
+<label>What repeatedly got in the way?</label><textarea data-s="obstacle"></textarea>
+<label>What did the Floor protect?</label><textarea data-s="floorvalue"></textarea>
+<label>What should stay exactly the same?</label><textarea data-s="keep"></textarea>
+<label>What ONE variable will I change next cycle?</label><textarea data-s="change"></textarea>
+</div>
+</section>
+
+<section class="panel" id="report">
+<div class="card report" id="printPanel"><div class="eyebrow">ForgeVra Final Report</div><h2>30-Day Restart Report</h2><p class="hint">Your record of execution, disruption and recovery.</p>
+<div class="gaugewrap" id="gaugeReport"></div>
+<div class="metric"><div class="m"><div class="num" id="rcomplete">0</div><div class="mlabel">Completed days</div></div><div class="m"><div class="num" id="rrate">0%</div><div class="mlabel">Completion rate</div></div><div class="m"><div class="num" id="rnotes">0</div><div class="mlabel">Days with reflections</div></div><div class="m"><div class="num" id="rlast">—</div><div class="mlabel">Last completed day</div></div></div>
+<h3>Goal</h3><p id="rgoal">—</p>
+<h3>Floor / Target / Stretch</h3><div id="rlevels">—</div>
+<h3>What happened most often?</h3><p id="rpatterns">Use your daily entries to identify repeated obstacles and lessons.</p>
+<h3>My biggest lesson</h3><p id="rlesson">—</p>
+<h3>Next-cycle decision</h3><p id="rchange">—</p>
+<h3>My restart statement</h3><p><b>I do not need a perfect record. I need a reliable return.</b></p>
+</div>
+<div class="card"><h2>Export</h2><p class="hint">Save your own copy before changing devices. Your coach already has a live copy via the cloud dashboard, if configured.</p>
+<div class="btns"><button class="btn dark" onclick="window.print()">Print / Save Final Report as PDF</button><button class="btn ghost" onclick="downloadBackup()">Download Backup</button><button class="btn ghost" onclick="restoreBackup()">Restore Backup</button><input type="file" id="backupFile" accept=".json" style="display:none" onchange="doRestore(event)"></div></div>
+</section>
+
+<footer>FORGEVRA • RESTART PROTOCOL • RESTART COMMAND CENTER • VERSION 3.0</footer>
+</div>
+</div>
+
+<script>
+const KEY = "forgevra_command_center_v3";
+let state = JSON.parse(localStorage.getItem(KEY) || '{"settings":{},"days":{}}');
+let currentDay = 1;
+function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
+
+/* ---- Settings (setup + review share the same data-s fields) ---- */
+function settingsEls(){return [...document.querySelectorAll("[data-s]")]}
+function save(){
+ state.settings=state.settings||{};
+ settingsEls().forEach(e=>state.settings[e.dataset.s]=e.value);
+ persist();
+ flash("Setup/review saved.");
+ updateAll();
+}
+function flash(msg){const x=document.getElementById("saveStatus");if(x){x.textContent=msg;x.className="status";setTimeout(()=>x.textContent="Saved",900)}}
+function loadSettings(){settingsEls().forEach(e=>{if(state.settings&&state.settings[e.dataset.s]!=null)e.value=state.settings[e.dataset.s]})}
+
+function show(id){
+ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+ document.getElementById("n"+id).classList.add("active");
+ if(id==="report")buildReport();
+ if(id==="days")renderDays();
+}
+function dayData(n){return state.days[n]||{}}
+function populateDay(n){
+ currentDay=n; let d=dayData(n);
+ document.getElementById("todayEyebrow").textContent="DAY "+n;
+ document.getElementById("todayTitle").textContent="Day "+n+" — Today's Mission";
+ ["mission","planned","done","worked","mistake","cause","lesson","adjust"].forEach(k=>document.getElementById(k).value=d[k]||"");
+ document.getElementById("level").value=d.level||"Target";
+ document.getElementById("saveStatus").textContent=d.savedAt?"Saved "+new Date(d.savedAt).toLocaleDateString():"Not saved yet";
+}
+function loadDay(n){populateDay(n);show("today")}
+function saveDay(){
+ let d={};["mission","planned","done","worked","mistake","cause","lesson","adjust"].forEach(k=>d[k]=document.getElementById(k).value);
+ d.level=document.getElementById("level").value; d.savedAt=new Date().toISOString();
+ d.complete=!!(state.days[currentDay]&&state.days[currentDay].complete);
+ state.days[currentDay]=d; persist(); flash("Day "+currentDay+" saved ✓"); updateAll();
+}
+function completeDay(){
+ saveDay(); state.days[currentDay].complete=true; persist();
+ document.getElementById("saveStatus").textContent="Day "+currentDay+" complete ✓"; updateAll();
+}
+function renderDays(){
+ let g=document.getElementById("daygrid");g.innerHTML="";
+ for(let i=1;i<=30;i++){let d=dayData(i),b=document.createElement("button");
+   b.className="daybtn"+(d.complete?" active":d.savedAt?" draft":"");
+   b.innerHTML="Day "+i+"<small>"+(d.complete?"Complete":d.savedAt?"Saved":"Open")+"</small>";
+   b.onclick=()=>loadDay(i);g.appendChild(b)}
+ let completed=Object.values(state.days).filter(d=>d.complete).length, notes=Object.values(state.days).filter(d=>d.lesson||d.mistake||d.cause).length;
+ document.getElementById("mcomplete").textContent=completed;document.getElementById("mrate").textContent=Math.round(completed/30*100)+"%";document.getElementById("mmisses").textContent=30-completed;document.getElementById("mnotes").textContent=notes;
+ drawGauge("gaugeMain",completed);
+}
+function updateAll(){
+ let completed=Object.values(state.days).filter(d=>d.complete).length;
+ document.getElementById("topbar").style.width=(completed/30*100)+"%";
+ document.getElementById("toptext").textContent=completed?`${completed}/30 days completed • ${Math.round(completed/30*100)}% of cycle`:"Cycle not started";
+ renderDays();
+}
+function buildReport(){
+ let ds=Object.values(state.days), completed=ds.filter(d=>d.complete).length, notes=ds.filter(d=>d.lesson||d.mistake||d.cause).length;
+ let last=Object.keys(state.days).map(Number).filter(n=>state.days[n].complete).sort((a,b)=>a-b).pop();
+ document.getElementById("rcomplete").textContent=completed;document.getElementById("rrate").textContent=Math.round(completed/30*100)+"%";document.getElementById("rnotes").textContent=notes;document.getElementById("rlast").textContent=last||"—";
+ document.getElementById("rgoal").textContent=state.settings.goal||"—";
+ document.getElementById("rlevels").textContent=`Floor: ${state.settings.floor||"—"} | Target: ${state.settings.target||"—"} | Stretch: ${state.settings.stretch||"—"}`;
+ let lessons=ds.map(d=>d.lesson).filter(Boolean);let mistakes=ds.map(d=>d.mistake).filter(Boolean);
+ document.getElementById("rpatterns").textContent=mistakes.length?`You recorded ${mistakes.length} obstacle/mistake note${mistakes.length===1?"":"s"}. Review the daily entries for repeated causes rather than treating each lapse as an isolated failure.`:"No mistake/obstacle notes recorded yet.";
+ document.getElementById("rlesson").textContent=lessons.length?lessons[lessons.length-1]:"No lesson recorded yet.";
+ document.getElementById("rchange").textContent=state.settings.change||state.settings.weeklyAdjust||"Choose one variable to change for the next cycle.";
+ drawGauge("gaugeReport",completed);
+}
+
+/* ---- Forge Gauge (signature radial progress dial) ---- */
+function gaugeSVG(){
+ return `<svg class="gauge" viewBox="0 0 260 150">
+  <defs><linearGradient id="emberGrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#b23a12"/><stop offset="100%" stop-color="#ff8a3d"/>
+  </linearGradient></defs>
+  <path class="track" d="M 30 130 A 100 100 0 0 1 230 130"/>
+  <path class="fill" id="__fillpath" d="M 30 130 A 100 100 0 0 1 230 130" stroke-dasharray="0 315"/>
+  <line class="needle" id="__needle" x1="130" y1="130" x2="130" y2="46"/>
+  <circle class="hub" cx="130" cy="130" r="7"/>
+ </svg>`;
+}
+function drawGauge(elId,completed){
+ const el=document.getElementById(elId); if(!el)return;
+ const pct=Math.max(0,Math.min(100,Math.round(completed/30*100)));
+ el.innerHTML=gaugeSVG()+`<div class="gaugeread">${completed}/30</div><div class="gaugesub">DAYS COMPLETE · ${pct}%</div>`;
+ const path=el.querySelector("#__fillpath"), needle=el.querySelector("#__needle");
+ const arcLen=314.16; // approx length of this semicircle path
+ path.setAttribute("stroke-dasharray",(pct/100*arcLen)+" "+arcLen);
+ const deg=-90+(pct/100*180);
+ needle.style.transform="rotate("+deg+"deg)";
+}
+
+/* ---- Backup / restore ---- */
+function downloadBackup(){
+ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);a.download="forgevra-restart-backup.json";a.click();URL.revokeObjectURL(a.href);
+}
+function restoreBackup(){document.getElementById("backupFile").click()}
+function doRestore(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=JSON.parse(r.result);persist();loadSettings();updateAll();populateDay(currentDay);buildReport();alert("Backup restored.");}catch(err){alert("That backup file could not be read.")}};r.readAsText(f)}
+
+/* ---- Boot ---- */
+loadSettings();renderDays();updateAll();populateDay(currentDay);show("setup");
+</script>
+</body>
+</html>
